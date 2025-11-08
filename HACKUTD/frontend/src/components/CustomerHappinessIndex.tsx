@@ -37,29 +37,49 @@ const CustomerHappinessIndex: React.FC = () => {
       </h2>
       
       <div className="flex flex-col items-center mb-6">
-        <motion.div
-          key={score}
-          initial={{ scale: 1 }}
-          animate={{ 
-            scale: [1, 1.1, 1],
-          }}
-          transition={{ 
-            duration: 0.6,
-            ease: "easeInOut"
-          }}
-          className="text-5xl md:text-6xl font-bold mb-2"
-        >
-          <span className="bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 bg-clip-text text-transparent">
-            {score}
-          </span>
-          <span className="text-gray-400 dark:text-gray-500 text-3xl md:text-4xl font-normal">
-            {' / 100'}
-          </span>
-        </motion.div>
+        <div className="flex items-center gap-3">
+          <motion.div
+            key={score}
+            initial={{ scale: 1 }}
+            animate={{ 
+              scale: [1, 1.1, 1],
+            }}
+            transition={{ 
+              duration: 0.6,
+              ease: "easeInOut"
+            }}
+            className="text-5xl md:text-6xl font-bold mb-2"
+          >
+            <span className="bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 bg-clip-text text-transparent">
+              {score}
+            </span>
+            <span className="text-gray-400 dark:text-gray-500 text-3xl md:text-4xl font-normal">
+              {' / 100'}
+            </span>
+          </motion.div>
+          <motion.span
+            key={score}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ 
+              scale: [0, 1.3, 1],
+              opacity: 1,
+            }}
+            transition={{ 
+              duration: 0.6,
+              ease: "easeOut",
+              type: "spring",
+              stiffness: 300,
+              damping: 20
+            }}
+            className="text-4xl md:text-5xl"
+          >
+            {emoji}
+          </motion.span>
+        </div>
       </div>
 
       {/* Gradient Progress Bar */}
-      <div className="relative w-full h-6 bg-gray-200 dark:bg-gray-800 rounded-full overflow-visible mt-4">
+      <div className="relative w-full h-6 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden mt-4">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${scorePercentage}%` }}
@@ -92,42 +112,6 @@ const CustomerHappinessIndex: React.FC = () => {
             }}
             className="w-full h-full"
           />
-        </motion.div>
-        
-        {/* Live Emoji Indicator */}
-        <motion.div
-          key={score}
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ 
-            left: `${scorePercentage}%`,
-            scale: [0, 1.3, 1],
-            opacity: 1,
-            y: [-10, 0]
-          }}
-          transition={{ 
-            duration: 0.6,
-            ease: "easeOut",
-            type: "spring",
-            stiffness: 300,
-            damping: 20
-          }}
-          className="absolute top-[-20px] text-2xl md:text-3xl pointer-events-none"
-          style={{
-            transform: 'translateX(0%)',
-          }}
-        >
-          <motion.span
-            animate={{
-              scale: [1, 1.2, 1],
-            }}
-            transition={{
-              duration: 0.5,
-              delay: 0.3,
-              ease: "easeInOut"
-            }}
-          >
-            {emoji}
-          </motion.span>
         </motion.div>
       </div>
 
