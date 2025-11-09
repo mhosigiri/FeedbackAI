@@ -1,6 +1,6 @@
 # FeedbackAI
 
-AI-powered customer feedback analysis platform for T-Mobile.
+AI-powered customer feedback analysis platform for T-Mobile integrating Nvidia's nemoTron mistral model.
 
 ## Setup
 
