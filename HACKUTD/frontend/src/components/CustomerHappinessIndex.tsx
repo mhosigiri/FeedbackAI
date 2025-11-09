@@ -20,7 +20,7 @@ const CustomerHappinessIndex: React.FC = () => {
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5 }}
-      className="rounded-[100px] shadow-md p-6 transition-all border border-[#E20074]/20 dark:border-[#E20074]/20 h-full flex flex-col items-center"
+      className="rounded-[100px] shadow-lg p-6 transition-all border border-[#E20074]/20 dark:border-[#E20074]/20 h-full flex flex-col items-center"
       style={{
         backgroundColor: 'rgba(226, 0, 116, 0.15)'
       }}

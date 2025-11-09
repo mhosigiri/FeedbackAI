@@ -1,19 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import CustomerHappinessIndex from './components/CustomerHappinessIndex';
 import AlreadyWorkingOn from './components/AlreadyWorkingOn';
-import ChatbotIcon from './components/ChatbotIcon';
 import Chatbot from './pages/Chatbot';
 import { Search, X, Bell } from 'lucide-react';
 import dashboardImage from './images/2.png';
 
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [notificationsRead, setNotificationsRead] = useState(false); // Start as false so red dot shows initially
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const notificationRef = useRef<HTMLDivElement>(null);
 
   // Handle click outside to collapse search
   useEffect(() => {
@@ -37,6 +40,55 @@ const Dashboard: React.FC = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isSearchExpanded, searchQuery]);
+
+  // Handle click outside to close notification dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+        setIsNotificationOpen(false);
+      }
+    };
+
+    if (isNotificationOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isNotificationOpen]);
+
+  // Dummy notification data
+  const notifications = [
+    { id: 1, title: 'New Feedback Received', message: 'Customer submitted feedback about network coverage', time: '5 min ago' },
+    { id: 2, title: 'System Update', message: 'Dashboard metrics have been updated', time: '1 hour ago' },
+    { id: 3, title: 'Alert', message: 'High priority issue reported in downtown area', time: '2 hours ago' },
+  ];
+
+  // Track the last notification count to detect new notifications
+  const [lastNotificationCount, setLastNotificationCount] = useState(3);
+
+  // Reset notificationsRead when new notifications arrive
+  useEffect(() => {
+    // If notification count increases, it means there are new notifications
+    if (notifications.length > lastNotificationCount) {
+      setNotificationsRead(false); // Show red dot for new notifications
+      setLastNotificationCount(notifications.length);
+    }
+  }, [notifications.length, lastNotificationCount]);
+
+  // Handle notification dropdown open/close
+  const handleNotificationToggle = () => {
+    const newState = !isNotificationOpen;
+    setIsNotificationOpen(newState);
+    if (newState && notifications.length > 0) {
+      // Mark notifications as read when dropdown is opened
+      setNotificationsRead(true);
+    }
+  };
+
+  // Check if there are new notifications (for future use when notifications update)
+  const hasNewNotifications = notifications.length > 0 && !notificationsRead;
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#0B0B0B]">
@@ -89,13 +141,72 @@ const Dashboard: React.FC = () => {
                     </motion.div>
                   )}
                 </div>
-                <button
-                  className="p-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#0B0B0B] hover:bg-gray-50 dark:hover:bg-gray-800 transition-all relative"
-                >
-                  <Bell className="w-5 h-5 text-gray-400 dark:text-gray-500" />
-                  {/* Optional notification badge */}
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#E20074] rounded-full"></span>
-                </button>
+                <div ref={notificationRef} className="relative">
+                  <motion.button
+                    onClick={handleNotificationToggle}
+                    whileTap={{ scale: 0.9 }}
+                    animate={isNotificationOpen ? { rotate: [0, -10, 10, -10, 0] } : {}}
+                    transition={{ duration: 0.5 }}
+                    className="p-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#0B0B0B] hover:bg-gray-50 dark:hover:bg-gray-800 transition-all relative"
+                  >
+                    <Bell className="w-5 h-5 text-gray-400 dark:text-gray-500" />
+                    {/* Notification badge - only show if there are new notifications */}
+                    {hasNewNotifications && (
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0 }}
+                        className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#E20074] rounded-full"
+                      />
+                    )}
+                  </motion.button>
+                  
+                  {/* Notification Dropdown */}
+                  {isNotificationOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                      className="absolute right-0 mt-2 w-80 bg-white dark:bg-[#121212] rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50"
+                    >
+                      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                        <h3 className="font-semibold text-gray-900 dark:text-white" style={{ fontFamily: 'Arial, sans-serif' }}>
+                          Notifications
+                        </h3>
+                      </div>
+                      <div className="max-h-96 overflow-y-auto">
+                        {notifications.length > 0 ? (
+                          notifications.map((notification) => (
+                            <motion.div
+                              key={notification.id}
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="p-4 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer"
+                            >
+                              <div className="flex flex-col gap-1">
+                                <h4 className="font-medium text-gray-900 dark:text-white text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>
+                                  {notification.title}
+                                </h4>
+                                <p className="text-xs text-gray-600 dark:text-gray-400" style={{ fontFamily: 'Arial, sans-serif' }}>
+                                  {notification.message}
+                                </p>
+                                <span className="text-xs text-gray-400 dark:text-gray-500 mt-1" style={{ fontFamily: 'Arial, sans-serif' }}>
+                                  {notification.time}
+                                </span>
+                              </div>
+                            </motion.div>
+                          ))
+                        ) : (
+                          <div className="p-4 text-center text-gray-500 dark:text-gray-400" style={{ fontFamily: 'Arial, sans-serif' }}>
+                            No notifications
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
               </div>
             </div>
             <p className="text-lg text-gray-600 dark:text-gray-400 mb-6">
@@ -110,56 +221,49 @@ const Dashboard: React.FC = () => {
                 transition={{ duration: 0.2, ease: "easeOut" }}
                 className="bg-transparent cursor-pointer relative z-20"
               >
-                {/* Black capsule below CHI, above image - mimics CHI pink capsule */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5 }}
-                  className="absolute inset-0 rounded-[100px] shadow-md p-6 transition-all border border-black/20 dark:border-black/20 h-full flex flex-col items-center pointer-events-none"
-                  style={{ 
-                    zIndex: 0,
-                    backgroundColor: 'rgba(0, 0, 0, 0.15)'
-                  }}
-                />
-                <div className="relative z-10">
-                  <CustomerHappinessIndex />
-                </div>
+                <CustomerHappinessIndex />
               </motion.div>
               
               {/* Top Right - Chatbot Icon with Image */}
-              <div className="rounded-2xl p-6 border border-gray-200 dark:border-gray-800 flex flex-col items-center justify-center relative overflow-hidden z-0" style={{ backgroundColor: '#00ffff' }}>
-                <div className="absolute top-2 right-[25%] z-20">
+              <motion.div 
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="rounded-2xl p-6 border border-gray-200 dark:border-gray-800 flex flex-col items-center justify-center relative overflow-hidden z-0 shadow-lg" 
+                style={{ backgroundColor: '#E20074' }}
+              >
+                <div 
+                  className="absolute top-2 right-[25%] z-30 cursor-pointer pointer-events-auto"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    navigate('/chatbot');
+                  }}
+                  onMouseDown={(e) => e.stopPropagation()}
+                >
                   <h2 className="text-right text-white">
-                    <div className="font-avallon text-[2.475rem] md:text-[3.3rem] lg:text-[4.125rem] italic">
+                    <div className="font-avallon text-[2.475rem] md:text-[3.3rem] lg:text-[4.125rem] italic hover:opacity-80 transition-opacity">
                       Talk
                     </div>
-                    <div className="font-avallon text-[2.475rem] md:text-[3.3rem] lg:text-[4.125rem] italic">
+                    <div className="font-avallon text-[2.475rem] md:text-[3.3rem] lg:text-[4.125rem] italic hover:opacity-80 transition-opacity">
                       To
                     </div>
-                    <div className="font-avallon text-[2.475rem] md:text-[3.3rem] lg:text-[4.125rem] font-bold">
+                    <div className="font-avallon text-[2.475rem] md:text-[3.3rem] lg:text-[4.125rem] font-bold hover:opacity-80 transition-opacity">
                       JOY!
                     </div>
                   </h2>
                 </div>
-                <motion.div 
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ duration: 0.2, ease: "easeOut" }}
-                  className="relative z-10"
-                >
-                  <ChatbotIcon />
-                </motion.div>
                 <img 
                   src={dashboardImage} 
                   alt="Dashboard" 
                   className="absolute bottom-0 left-[-20%] w-[381px] h-auto object-contain rounded-lg z-0 md:w-[475px] lg:w-[570px]"
                 />
-              </div>
+              </motion.div>
               
               {/* Bottom Left - Live Map */}
               <motion.div 
                 whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
-                className="bg-white dark:bg-[#0B0B0B] rounded-2xl shadow-md p-6 border border-gray-200 dark:border-gray-800 flex flex-col cursor-pointer"
+                className="bg-white dark:bg-[#0B0B0B] rounded-2xl shadow-lg p-6 border border-gray-200 dark:border-gray-800 flex flex-col cursor-pointer"
               >
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Live Map</h3>
