@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Sidebar from '../components/Sidebar';
-import ChatbotHeader from '../components/ChatbotHeader';
+import { useNavigate } from 'react-router-dom';
 import ChatMessage from '../components/ChatMessage';
 import TypingIndicator from '../components/TypingIndicator';
-import { Send } from 'lucide-react';
+import { Send, ArrowLeft } from 'lucide-react';
 import joyImage from '../images/3.png';
+import { chat } from '../api';
 
 interface Message {
   id: string;
@@ -14,7 +14,8 @@ interface Message {
   timestamp: string;
 }
 
-const Chatbot: React.FC = () => {
+const AIAssistant: React.FC = () => {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -53,17 +54,26 @@ const Chatbot: React.FC = () => {
     setInputValue('');
     setIsTyping(true);
 
-    // Simulate AI response after delay
-    setTimeout(() => {
+    try {
+      const res = await chat({ message: userMessage.text });
       setIsTyping(false);
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
-        text: "Thank you for your message! I'm here to help you with any questions about T-Mobile services, feedback, or support. How can I assist you today?",
+        text: res.reply || "I'm here to help with T‑Mobile services.",
         isUser: false,
         timestamp: formatTime(),
       };
       setMessages((prev) => [...prev, aiResponse]);
-    }, 1500);
+    } catch (e: any) {
+      setIsTyping(false);
+      const fail: Message = {
+        id: (Date.now() + 1).toString(),
+        text: 'Assistant is temporarily unavailable. Please try again.',
+        isUser: false,
+        timestamp: formatTime(),
+      };
+      setMessages((prev) => [...prev, fail]);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -75,11 +85,34 @@ const Chatbot: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#0B0B0B]">
-      <Sidebar />
-      <main className="min-h-screen transition-all duration-300 md:ml-[250px] flex flex-col">
-        <ChatbotHeader />
+      <main className="min-h-screen flex flex-col">
+        {/* Header */}
+        <header className="w-full flex items-center justify-between py-6 px-6 border-b border-gray-200 dark:border-gray-800" role="banner">
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-[#E20074] transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span className="text-sm font-medium">Back</span>
+          </button>
+          <h1 className="text-center flex-1">
+            <span 
+              className="font-amsterdam text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-gray-800 dark:text-gray-200 leading-[1.2] tracking-tight"
+              aria-label="Talk to"
+            >
+              Talk to{' '}
+            </span>
+            <span 
+              className="font-avallon text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-[#E20074] leading-[1.2] tracking-tight"
+              aria-label="Joy"
+            >
+              Joy
+            </span>
+          </h1>
+          <div className="w-20"></div> {/* Spacer for centering */}
+        </header>
         
-        {/* Top Section - Joy Mascot */}
+        {/* Top Section - AI Assistant Mascot */}
         {messages.length === 0 && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -90,7 +123,7 @@ const Chatbot: React.FC = () => {
             <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-[#E20074] shadow-lg mb-6">
               <img 
                 src={joyImage} 
-                alt="Joy" 
+                alt="AI Assistant" 
                 className="w-full h-full object-cover"
               />
             </div>
@@ -130,7 +163,7 @@ const Chatbot: React.FC = () => {
         </div>
 
         {/* Input Section - Fixed at Bottom */}
-        <div className="fixed bottom-0 left-0 right-0 md:left-[250px] bg-white dark:bg-[#0B0B0B] border-t border-gray-200 dark:border-gray-800 shadow-lg pb-safe">
+        <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-[#0B0B0B] border-t border-gray-200 dark:border-gray-800 shadow-lg pb-safe">
           <div className="max-w-3xl mx-auto px-4 py-4">
             <div className="flex items-end gap-3">
               <div className="flex-1 relative">
@@ -165,5 +198,5 @@ const Chatbot: React.FC = () => {
   );
 };
 
-export default Chatbot;
+export default AIAssistant;
 

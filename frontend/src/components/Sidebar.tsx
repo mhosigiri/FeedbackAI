@@ -11,14 +11,18 @@ import {
   Sun,
   Moon
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 interface SidebarProps {}
 
 const Sidebar: React.FC<SidebarProps> = () => {
+  const navigate = useNavigate();
+  const { isLoggedIn, user } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState('dashboard');
+  const [activeSection, setActiveSection] = useState('/dashboard');
   const [isDarkMode, setIsDarkMode] = useState(() => {
     // Check localStorage or system preference
     if (typeof window !== 'undefined') {
@@ -55,43 +59,21 @@ const Sidebar: React.FC<SidebarProps> = () => {
   }, [isDarkMode]);
 
   useEffect(() => {
-    // Scroll spy to detect active section
-    const handleScroll = () => {
-      const sections = ['dashboard', 'insights', 'settings'];
-      const scrollPosition = window.scrollY + 200; // Offset for better detection
-
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const section = document.getElementById(sections[i]);
-        if (section) {
-          const sectionTop = section.offsetTop;
-          const sectionHeight = section.offsetHeight;
-          
-          if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
-            setActiveSection(sections[i]);
-            break;
-          }
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Check on mount
-
-    return () => window.removeEventListener('scroll', handleScroll);
+    setActiveSection(window.location.pathname || '/dashboard');
+    const pop = () => setActiveSection(window.location.pathname || '/dashboard');
+    window.addEventListener('popstate', pop);
+    return () => window.removeEventListener('popstate', pop);
   }, []);
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
   };
 
-  const scrollToSection = (sectionId: string) => {
-    const section = document.getElementById(sectionId);
-    if (section) {
-      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      setActiveSection(sectionId);
-      if (isMobile) {
-        setIsMobileMenuOpen(false);
-      }
+  const goTo = (path: string) => {
+    navigate(path);
+    setActiveSection(path);
+    if (isMobile) {
+      setIsMobileMenuOpen(false);
     }
   };
 
@@ -104,9 +86,11 @@ const Sidebar: React.FC<SidebarProps> = () => {
   };
 
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'insights', label: 'Insights', icon: BarChart3 },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: '/dashboard', label: 'Dashboard', icon: Home },
+    { id: '/feed', label: 'Feed', icon: BarChart3 },
+    { id: '/assistant', label: 'AI Assistant', icon: User },
+    ...(isLoggedIn ? [{ id: '/workflow', label: 'AI Workflow', icon: Edit2 }] : []),
+    { id: '/settings', label: 'Settings', icon: Settings },
   ];
 
   const sidebarVariants = {
@@ -169,55 +153,47 @@ const Sidebar: React.FC<SidebarProps> = () => {
       </div>
 
       {/* User Profile */}
-      <div className="px-4 py-6 border-b border-gray-200 dark:border-gray-800">
-        <AnimatePresence mode="wait">
-          {!isCollapsed ? (
-            <motion.div
-              key="profile-expanded"
-              initial="collapsed"
-              animate="expanded"
-              exit="collapsed"
-              variants={contentVariants}
-              className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            >
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#E20074] to-[#FF0066] flex items-center justify-center flex-shrink-0">
-                <User className="w-8 h-8 text-white" />
-              </div>
-              <div className="flex flex-col items-center min-w-0">
-                <p className="text-sm font-medium text-gray-900 dark:text-white text-center">
-                  John Doe
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-                  Admin
-                </p>
-              </div>
-              <button
-                onClick={() => {
-                  // Edit functionality can be added here later
-                  console.log('Edit profile clicked');
-                }}
-                className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+      {isLoggedIn && (
+        <div className="px-4 py-6 border-b border-gray-200 dark:border-gray-800">
+          <AnimatePresence mode="wait">
+            {!isCollapsed ? (
+              <motion.div
+                key="profile-expanded"
+                initial="collapsed"
+                animate="expanded"
+                exit="collapsed"
+                variants={contentVariants}
+                className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
-                <Edit2 className="w-3.5 h-3.5" />
-                <span>Edit</span>
-              </button>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="profile-collapsed"
-              initial="collapsed"
-              animate="expanded"
-              exit="collapsed"
-              variants={contentVariants}
-              className="flex justify-center"
-            >
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#E20074] to-[#FF0066] flex items-center justify-center">
-                <User className="w-6 h-6 text-white" />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#E20074] to-[#FF0066] flex items-center justify-center flex-shrink-0">
+                  <User className="w-8 h-8 text-white" />
+                </div>
+                <div className="flex flex-col items-center min-w-0">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white text-center">
+                    {user?.displayName || user?.email || 'Employee'}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                    Employee
+                  </p>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="profile-collapsed"
+                initial="collapsed"
+                animate="expanded"
+                exit="collapsed"
+                variants={contentVariants}
+                className="flex justify-center"
+              >
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#E20074] to-[#FF0066] flex items-center justify-center">
+                  <User className="w-6 h-6 text-white" />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
 
       {/* Navigation */}
       <nav className="flex-1 py-4 px-2">
@@ -229,7 +205,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
             return (
               <li key={item.id}>
                 <motion.button
-                  onClick={() => scrollToSection(item.id)}
+                  onClick={() => goTo(item.id)}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   className={`
@@ -395,30 +371,21 @@ const Sidebar: React.FC<SidebarProps> = () => {
 
                   {/* Mobile User Profile */}
                   <div className="px-4 py-6 border-b border-gray-200 dark:border-gray-800">
-                    <div className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#E20074] to-[#FF0066] flex items-center justify-center flex-shrink-0">
-                        <User className="w-8 h-8 text-white" />
+                    {isLoggedIn && (
+                      <div className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#E20074] to-[#FF0066] flex items-center justify-center flex-shrink-0">
+                          <User className="w-8 h-8 text-white" />
+                        </div>
+                        <div className="flex flex-col items-center min-w-0">
+                          <p className="text-sm font-medium text-gray-900 dark:text-white text-center">
+                            {user?.displayName || user?.email || 'Employee'}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                            Employee
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex flex-col items-center min-w-0">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white text-center">
-                          John Doe
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-                          Admin
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => {
-                          // Edit functionality can be added here later
-                          console.log('Edit profile clicked');
-                          setIsMobileMenuOpen(false);
-                        }}
-                        className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                        <span>Edit</span>
-                      </button>
-                    </div>
+                    )}
                   </div>
 
                   {/* Mobile Navigation */}
@@ -431,7 +398,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
                         return (
                           <li key={item.id}>
                             <button
-                              onClick={() => scrollToSection(item.id)}
+                              onClick={() => goTo(item.id)}
                               className={`
                                 w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl
                                 transition-all duration-200

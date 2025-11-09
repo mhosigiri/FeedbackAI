@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Annotated
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 
@@ -12,6 +12,13 @@ from app.schemas import (
     SentimentQuery,
     SentimentResponse,
     SocialPost,
+    FeedbackItem,
+    FeedbackAnalysis,
+    ChatRequest,
+    ChatResponse,
+    EmployeeUpdateRequest,
+    EmployeeRecord,
+    EmployeeSignupRequest,
 )
 from app import services
 
@@ -78,3 +85,53 @@ async def fetch_posts(
 @app.post("/analyze", response_model=SentimentResponse)
 async def analyze(query: SentimentQuery, settings: Annotated[Settings, Depends(get_settings)]) -> SentimentResponse:
     return await services.build_sentiment_response(query, settings)
+
+
+@app.post("/feedback")
+async def submit_feedback(
+    item: FeedbackItem,
+    background: BackgroundTasks,
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> dict[str, bool]:
+    # Ensure an id so analysis can reference it deterministically
+    if not item.id:
+        item.id = f"fb-{int(datetime.now(timezone.utc).timestamp()*1000)}"
+    ok = await services.write_feedback(item, settings)
+    if ok:
+        # Fire-and-forget Nemotron analysis
+        background.add_task(services.analyze_feedback_item, item, settings)
+    return {"ok": ok}
+
+
+@app.post("/feedback/analyze")
+async def analyze_feedback_now(
+    item: FeedbackItem,
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> dict[str, bool]:
+    ok = await services.analyze_feedback_item(item, settings)
+    return {"ok": ok}
+
+
+@app.get("/feedback/analyses", response_model=list[FeedbackAnalysis])
+async def list_analyses(
+    settings: Annotated[Settings, Depends(get_settings)],
+    limit: int = 10,
+) -> list[FeedbackAnalysis]:
+    records = await services.list_feedback_analyses(limit, settings)
+    # Coerce into pydantic model (analyzed_at is int epoch)
+    return [FeedbackAnalysis(**rec) for rec in records]
+
+
+@app.post("/chat", response_model=ChatResponse)
+async def chat(request: ChatRequest, settings: Annotated[Settings, Depends(get_settings)]) -> ChatResponse:
+    return await services.chat_with_openrouter(request, settings)
+
+
+@app.post("/employees/update", response_model=EmployeeRecord)
+async def employee_update(payload: EmployeeUpdateRequest, settings: Annotated[Settings, Depends(get_settings)]) -> EmployeeRecord:
+    return await services.upsert_employee(payload, settings)
+
+
+@app.post("/employees/signup", response_model=EmployeeRecord)
+async def employee_signup(payload: EmployeeSignupRequest, settings: Annotated[Settings, Depends(get_settings)]) -> EmployeeRecord:
+    return await services.signup_employee(payload, settings)

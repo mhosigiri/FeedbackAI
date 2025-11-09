@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     NEMOTRON_API_KEY: Optional[str] = None
     GEMINI_API_KEY: Optional[str] = None
     GOOGLE_MAPS_API_KEY: Optional[str] = None
+    OPENROUTER_API_KEY: Optional[str] = None
 
     # Frontend + CORS
     FRONTEND_ORIGIN: str = "http://localhost:5173"
@@ -41,7 +42,17 @@ class Settings(BaseSettings):
     # External endpoints
     REDDIT_BASE_URL: str = "https://oauth.reddit.com"
     NEMOTRON_BASE_URL: str = "https://integrate.api.nvidia.com/v1"
-    NEMOTRON_MODEL: str = "mistralai/mistral-nemotron"
+    NEMOTRON_MODEL: str = "NVIDIABuild-Autogen-33"
+    GEMINI_MODEL: str = "gemini-1.5-flash"
+    OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
+    OPENROUTER_MODEL: str = "openrouter/auto"
+
+    # Firebase (server-side)
+    FIREBASE_SERVICE_ACCOUNT_JSON: Optional[str] = None  # JSON string
+    FIREBASE_CREDENTIALS_PATH: Optional[str] = None      # path to JSON file
+    FIREBASE_PROJECT_ID: Optional[str] = None
+    FIREBASE_STORE: str = "realtime"  # or "firestore"
+    FIREBASE_DATABASE_URL: Optional[str] = None
 
     @field_validator("ALLOWED_ORIGINS", mode="before")
     @classmethod

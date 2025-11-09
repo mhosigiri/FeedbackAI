@@ -1,17 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { analyze } from '../api';
+import type { AnalyzeResponse } from '../types';
 
 const CustomerHappinessIndex: React.FC = () => {
-  const [score, setScore] = useState(72);
+  const [score, setScore] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>('');
 
-  // Simulate score updates (optional - can be removed if score comes from props/API)
   useEffect(() => {
-    // This is just for demonstration - in production, score would come from API
-    // Uncomment below to simulate score changes every 5 seconds
-    // const interval = setInterval(() => {
-    //   setScore(prev => Math.min(100, Math.max(0, prev + Math.floor(Math.random() * 10 - 5))));
-    // }, 5000);
-    // return () => clearInterval(interval);
+    let mounted = true;
+    async function run() {
+      setLoading(true);
+      setError('');
+      try {
+        const data = (await analyze({ query: 'T-Mobile network', limit: 9 })) as AnalyzeResponse;
+        if (!mounted) return;
+        setScore(Math.round(data.csi_score ?? 0));
+      } catch (e: any) {
+        if (!mounted) return;
+        setError(e?.message || 'Failed to load CHI');
+        setScore(0);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+    run();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const scorePercentage = Math.min(100, Math.max(0, score));
@@ -35,6 +52,12 @@ const CustomerHappinessIndex: React.FC = () => {
       <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
         Customer Happiness Index (CHI)
       </h2>
+      {loading && (
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Loading live score…</p>
+      )}
+      {error && (
+        <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error: {error}</p>
+      )}
       
       <div className="flex flex-col items-center mb-6">
         <motion.div
