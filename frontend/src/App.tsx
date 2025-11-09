@@ -20,7 +20,7 @@ import { useEffect, useState } from 'react';
 import { analyze } from './api';
 import type { AnalyzeResponse } from './types';
 import { useAuth } from './contexts/AuthContext';
-import logoImage from './images/fai.png';
+import logoImage from './images/F2.png';
 
 const App: React.FC = () => {
   const [chiKey, setChiKey] = useState(0);

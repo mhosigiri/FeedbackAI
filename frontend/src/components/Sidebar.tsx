@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import logoImage from '../images/fai.png';
+import logoImage from '../images/F2.png';
 
 interface SidebarProps {}
 

@@ -1,5 +1,43 @@
-**PLEASE READ THE INSTRUCTIONS CAREFULLY**
+# FeedbackAI
 
-Please install the libraries and dependencies inside the respective folders.
-If making changes, make sure to create a new branch, test the new features or changes and submit it for review.
-Make sure not to force push it into the main/master branch without proper testing.
+AI-powered customer feedback analysis platform for T-Mobile.
+
+## Setup
+
+### Backend
+```bash
+cd backend
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+uvicorn main:app --reload
+```
+
+### Frontend
+```bash
+cd frontend
+npm install
+npm start
+```
+
+## Configuration
+
+Create `.env` files in both backend and frontend directories with required API keys.
+
+## Features
+
+- Customer sentiment analysis
+- AI workflow automation
+- Employee and customer dashboards
+- Real-time analytics
+- Firebase integration
+
+## Usage
+
+- Employee login: Full access to analytics and workflow management
+- Customer portal: View analytics and submit feedback
+- AI Assistant: Chat-based support powered by OpenRouter
+
+## Development
+
+Create a new branch for changes and test before merging to main.
