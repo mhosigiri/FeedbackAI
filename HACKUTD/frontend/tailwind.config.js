@@ -8,6 +8,8 @@ module.exports = {
     extend: {
       fontFamily: {
         sans: ['Inter', 'Poppins', 'system-ui', 'sans-serif'],
+        amsterdam: ['Lavishly Yours', 'Georgia', 'serif'],
+        avallon: ['Knewave', 'Impact', 'Arial Black', 'sans-serif'],
       },
       colors: {
         't-mobile-magenta': '#E20074',

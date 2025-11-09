@@ -1,18 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 
 const CustomerHappinessIndex: React.FC = () => {
-  const [score, setScore] = useState(72);
-
-  // Simulate score updates (optional - can be removed if score comes from props/API)
-  useEffect(() => {
-    // This is just for demonstration - in production, score would come from API
-    // Uncomment below to simulate score changes every 5 seconds
-    // const interval = setInterval(() => {
-    //   setScore(prev => Math.min(100, Math.max(0, prev + Math.floor(Math.random() * 10 - 5))));
-    // }, 5000);
-    // return () => clearInterval(interval);
-  }, []);
+  const [score] = useState(72);
 
   const scorePercentage = Math.min(100, Math.max(0, score));
 

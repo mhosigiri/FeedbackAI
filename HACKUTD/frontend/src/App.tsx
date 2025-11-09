@@ -1,11 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import CustomerHappinessIndex from './components/CustomerHappinessIndex';
 import AlreadyWorkingOn from './components/AlreadyWorkingOn';
+import ChatbotIcon from './components/ChatbotIcon';
+import Chatbot from './pages/Chatbot';
 import { Search, X, Bell } from 'lucide-react';
+import dashboardImage from './images/2.png';
 
-const App: React.FC = () => {
+const Dashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -100,7 +104,58 @@ const App: React.FC = () => {
             
             {/* Dashboard Grid - 4 Equal Parts */}
             <div className="grid grid-cols-2 grid-rows-2 gap-6 h-[600px]">
-              {/* Top Left - Live Map */}
+              {/* Top Left - Customer Happiness Index */}
+              <motion.div 
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="bg-transparent cursor-pointer relative z-20"
+              >
+                {/* Black capsule below CHI, above image - mimics CHI pink capsule */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5 }}
+                  className="absolute inset-0 rounded-[100px] shadow-md p-6 transition-all border border-black/20 dark:border-black/20 h-full flex flex-col items-center pointer-events-none"
+                  style={{ 
+                    zIndex: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.15)'
+                  }}
+                />
+                <div className="relative z-10">
+                  <CustomerHappinessIndex />
+                </div>
+              </motion.div>
+              
+              {/* Top Right - Chatbot Icon with Image */}
+              <div className="rounded-2xl p-6 border border-gray-200 dark:border-gray-800 flex flex-col items-center justify-center relative overflow-hidden z-0" style={{ backgroundColor: '#00ffff' }}>
+                <div className="absolute top-2 right-[25%] z-20">
+                  <h2 className="text-right text-white">
+                    <div className="font-avallon text-[2.475rem] md:text-[3.3rem] lg:text-[4.125rem] italic">
+                      Talk
+                    </div>
+                    <div className="font-avallon text-[2.475rem] md:text-[3.3rem] lg:text-[4.125rem] italic">
+                      To
+                    </div>
+                    <div className="font-avallon text-[2.475rem] md:text-[3.3rem] lg:text-[4.125rem] font-bold">
+                      JOY!
+                    </div>
+                  </h2>
+                </div>
+                <motion.div 
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className="relative z-10"
+                >
+                  <ChatbotIcon />
+                </motion.div>
+                <img 
+                  src={dashboardImage} 
+                  alt="Dashboard" 
+                  className="absolute bottom-0 left-[-20%] w-[381px] h-auto object-contain rounded-lg z-0 md:w-[475px] lg:w-[570px]"
+                />
+              </div>
+              
+              {/* Bottom Left - Live Map */}
               <motion.div 
                 whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
@@ -115,24 +170,6 @@ const App: React.FC = () => {
                 <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
                   <p className="text-gray-500 dark:text-gray-400 text-sm">Map visualization will appear here</p>
                 </div>
-              </motion.div>
-              
-              {/* Top Right */}
-              <motion.div 
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-                className="bg-white dark:bg-[#0B0B0B] rounded-2xl shadow-md p-6 border border-gray-200 dark:border-gray-800 cursor-pointer"
-              >
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Top Right</h3>
-              </motion.div>
-              
-              {/* Bottom Left - Customer Happiness Index */}
-              <motion.div 
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-                className="bg-transparent cursor-pointer"
-              >
-                <CustomerHappinessIndex />
               </motion.div>
               
               {/* Bottom Right - Already Working On */}
@@ -172,6 +209,15 @@ const App: React.FC = () => {
         </section>
       </main>
     </div>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <Routes>
+      <Route path="/" element={<Dashboard />} />
+      <Route path="/chatbot" element={<Chatbot />} />
+    </Routes>
   );
 };
 
