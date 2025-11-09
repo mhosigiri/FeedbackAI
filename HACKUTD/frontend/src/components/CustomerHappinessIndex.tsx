@@ -27,17 +27,20 @@ const CustomerHappinessIndex: React.FC = () => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5 }}
-      className="bg-white dark:bg-[#0B0B0B] rounded-2xl shadow-md p-6 mb-6 transition-all border border-gray-200 dark:border-gray-800"
+      className="rounded-[100px] shadow-md p-6 transition-all border border-[#E20074]/20 dark:border-[#E20074]/20 h-full flex flex-col items-center"
+      style={{
+        backgroundColor: 'rgba(226, 0, 116, 0.15)'
+      }}
     >
-      <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
+      <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6 text-center mt-4">
         Customer Happiness Index (CHI)
       </h2>
       
-      <div className="flex flex-col items-center mb-6">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col items-center mt-2">
+        <div className="flex items-center gap-3 mb-4">
           <motion.div
             key={score}
             initial={{ scale: 1 }}
@@ -48,12 +51,12 @@ const CustomerHappinessIndex: React.FC = () => {
               duration: 0.6,
               ease: "easeInOut"
             }}
-            className="text-5xl md:text-6xl font-bold mb-2"
+            className="text-4xl md:text-5xl font-bold"
           >
             <span className="bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 bg-clip-text text-transparent">
               {score}
             </span>
-            <span className="text-gray-400 dark:text-gray-500 text-3xl md:text-4xl font-normal">
+            <span className="text-gray-400 text-2xl md:text-3xl font-normal">
               {' / 100'}
             </span>
           </motion.div>
@@ -71,56 +74,48 @@ const CustomerHappinessIndex: React.FC = () => {
               stiffness: 300,
               damping: 20
             }}
-            className="text-4xl md:text-5xl"
+            className="text-3xl md:text-4xl"
           >
             {emoji}
           </motion.span>
         </div>
-      </div>
 
-      {/* Gradient Progress Bar */}
-      <div className="relative w-full h-6 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden mt-4">
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${scorePercentage}%` }}
-          transition={{ 
-            duration: 1,
-            ease: "easeOut"
-          }}
-          className="absolute top-0 left-0 h-full rounded-full"
-          style={{
-            background: `linear-gradient(to right, 
-              #ef4444 0%, 
-              #f97316 25%, 
-              #eab308 50%, 
-              #84cc16 75%, 
-              #22c55e 100%)`
-          }}
-        >
+        {/* Capsule-shaped gradient progress bar */}
+        <div className="relative w-full max-w-xs h-8 bg-gray-700 dark:bg-gray-800 rounded-full overflow-hidden">
           <motion.div
-            animate={{
-              boxShadow: [
-                '0 0 0px rgba(34, 197, 94, 0)',
-                '0 0 20px rgba(34, 197, 94, 0.5)',
-                '0 0 0px rgba(34, 197, 94, 0)',
-              ],
+            initial={{ width: 0 }}
+            animate={{ width: `${scorePercentage}%` }}
+            transition={{ 
+              duration: 1,
+              ease: "easeOut"
             }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut"
+            className="absolute top-0 left-0 h-full rounded-full"
+            style={{
+              background: `linear-gradient(to right, 
+                #ef4444 0%, 
+                #f97316 25%, 
+                #eab308 50%, 
+                #84cc16 75%, 
+                #22c55e 100%)`
             }}
-            className="w-full h-full"
-          />
-        </motion.div>
-      </div>
-
-      {/* Score Indicator Labels */}
-      <div className="flex justify-between mt-2 text-xs text-gray-500 dark:text-gray-400">
-        <span>Poor (0-40)</span>
-        <span>Fair (41-70)</span>
-        <span>Good (71-85)</span>
-        <span>Excellent (86-100)</span>
+          >
+            <motion.div
+              animate={{
+                boxShadow: [
+                  '0 0 0px rgba(34, 197, 94, 0)',
+                  '0 0 15px rgba(34, 197, 94, 0.5)',
+                  '0 0 0px rgba(34, 197, 94, 0)',
+                ],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="w-full h-full"
+            />
+          </motion.div>
+        </div>
       </div>
     </motion.div>
   );

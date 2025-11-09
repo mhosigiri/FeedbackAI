@@ -97,8 +97,52 @@ const App: React.FC = () => {
               Welcome to your T-Mobile Feedback AI Dashboard. Monitor customer feedback and insights in real-time.
             </p>
             
-            {/* Customer Happiness Index Component */}
-            <CustomerHappinessIndex />
+            {/* Dashboard Grid - 4 Equal Parts */}
+            <div className="grid grid-cols-2 grid-rows-2 gap-6 h-[600px]">
+              {/* Top Left - Live Map */}
+              <motion.div 
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="bg-white dark:bg-[#0B0B0B] rounded-2xl shadow-md p-6 border border-gray-200 dark:border-gray-800 flex flex-col cursor-pointer"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Live Map</h3>
+                  <button className="px-4 py-2 bg-[#E20074] text-white rounded-lg text-sm font-medium hover:bg-[#C20064] transition-colors">
+                    View Map
+                  </button>
+                </div>
+                <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">Map visualization will appear here</p>
+                </div>
+              </motion.div>
+              
+              {/* Top Right */}
+              <motion.div 
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="bg-white dark:bg-[#0B0B0B] rounded-2xl shadow-md p-6 border border-gray-200 dark:border-gray-800 cursor-pointer"
+              >
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Top Right</h3>
+              </motion.div>
+              
+              {/* Bottom Left - Customer Happiness Index */}
+              <motion.div 
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="bg-transparent cursor-pointer"
+              >
+                <CustomerHappinessIndex />
+              </motion.div>
+              
+              {/* Bottom Right */}
+              <motion.div 
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="bg-white dark:bg-[#0B0B0B] rounded-2xl shadow-md p-6 border border-gray-200 dark:border-gray-800 cursor-pointer"
+              >
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Bottom Right</h3>
+              </motion.div>
+            </div>
           </div>
         </section>
 
