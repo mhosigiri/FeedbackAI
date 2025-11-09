@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Home, 
   BarChart3, 
@@ -9,12 +10,15 @@ import {
   User,
   Edit2,
   Sun,
-  Moon
+  Moon,
+  MessageCircle
 } from 'lucide-react';
 
 interface SidebarProps {}
 
 const Sidebar: React.FC<SidebarProps> = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -55,7 +59,18 @@ const Sidebar: React.FC<SidebarProps> = () => {
   }, [isDarkMode]);
 
   useEffect(() => {
-    // Scroll spy to detect active section
+    // Set active section based on current route
+    if (location.pathname === '/chatbot') {
+      setActiveSection('joy');
+    } else {
+      setActiveSection('dashboard');
+    }
+  }, [location.pathname]);
+
+  useEffect(() => {
+    // Scroll spy to detect active section (only on dashboard page)
+    if (location.pathname !== '/') return;
+
     const handleScroll = () => {
       const sections = ['dashboard', 'insights', 'settings'];
       const scrollPosition = window.scrollY + 200; // Offset for better detection
@@ -78,7 +93,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
     handleScroll(); // Check on mount
 
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [location.pathname]);
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
@@ -104,9 +119,10 @@ const Sidebar: React.FC<SidebarProps> = () => {
   };
 
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'insights', label: 'Insights', icon: BarChart3 },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'dashboard', label: 'Dashboard', icon: Home, type: 'scroll' },
+    { id: 'insights', label: 'Insights', icon: BarChart3, type: 'scroll' },
+    { id: 'joy', label: 'Joy', icon: MessageCircle, type: 'navigate', path: '/chatbot' },
+    { id: 'settings', label: 'Settings', icon: Settings, type: 'scroll' },
   ];
 
   const sidebarVariants = {
@@ -229,7 +245,16 @@ const Sidebar: React.FC<SidebarProps> = () => {
             return (
               <li key={item.id}>
                 <motion.button
-                  onClick={() => scrollToSection(item.id)}
+                  onClick={() => {
+                    if (item.type === 'navigate' && item.path) {
+                      navigate(item.path);
+                      if (isMobile) {
+                        setIsMobileMenuOpen(false);
+                      }
+                    } else {
+                      scrollToSection(item.id);
+                    }
+                  }}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   className={`
@@ -431,7 +456,14 @@ const Sidebar: React.FC<SidebarProps> = () => {
                         return (
                           <li key={item.id}>
                             <button
-                              onClick={() => scrollToSection(item.id)}
+                              onClick={() => {
+                                if (item.type === 'navigate' && item.path) {
+                                  navigate(item.path);
+                                  setIsMobileMenuOpen(false);
+                                } else {
+                                  scrollToSection(item.id);
+                                }
+                              }}
                               className={`
                                 w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl
                                 transition-all duration-200

@@ -37,3 +37,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* iOS Safe Area Support */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
