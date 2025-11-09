@@ -6,19 +6,21 @@ import {
   Settings, 
   Menu, 
   X,
-  User,
   Edit2,
   Sun,
-  Moon
+  Moon,
+  Ticket,
+  User
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import logoImage from '../images/fai.png';
 
 interface SidebarProps {}
 
 const Sidebar: React.FC<SidebarProps> = () => {
   const navigate = useNavigate();
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn, user, isEmployee, isCustomer } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -89,8 +91,11 @@ const Sidebar: React.FC<SidebarProps> = () => {
     { id: '/dashboard', label: 'Dashboard', icon: Home },
     { id: '/feed', label: 'Feed', icon: BarChart3 },
     { id: '/assistant', label: 'AI Assistant', icon: User },
-    ...(isLoggedIn ? [{ id: '/workflow', label: 'AI Workflow', icon: Edit2 }] : []),
-    { id: '/settings', label: 'Settings', icon: Settings },
+    // Customer-only items
+    ...(isCustomer ? [{ id: '/create-ticket', label: 'Create Ticket', icon: Ticket }] : []),
+    // Employee-only items
+    ...(isEmployee ? [{ id: '/workflow', label: 'AI Workflow', icon: Edit2 }] : []),
+    ...(isEmployee ? [{ id: '/settings', label: 'Settings', icon: Settings }] : []),
   ];
 
   const sidebarVariants = {
@@ -118,23 +123,31 @@ const Sidebar: React.FC<SidebarProps> = () => {
                 variants={contentVariants}
                 className="flex items-center gap-3"
               >
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#E20074] to-[#FF0066] flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">T</span>
+                <div className="w-10 h-10 rounded-2xl overflow-hidden shadow-lg border-2 border-white dark:border-gray-800">
+                  <img 
+                    src={logoImage} 
+                    alt="FeedbackAI Logo" 
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div>
                   <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
-                    T-Mobile
+                    FeedbackAI
                   </h2>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Feedback AI
+                    T-Mobile Platform
                   </p>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
           {isCollapsed && !isMobile && (
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#E20074] to-[#FF0066] flex items-center justify-center mx-auto">
-              <span className="text-white font-bold text-sm">T</span>
+            <div className="w-10 h-10 rounded-2xl overflow-hidden shadow-lg border-2 border-white dark:border-gray-800 mx-auto">
+              <img 
+                src={logoImage} 
+                alt="FeedbackAI Logo" 
+                className="w-full h-full object-cover"
+              />
             </div>
           )}
           {!isMobile && (
@@ -152,48 +165,93 @@ const Sidebar: React.FC<SidebarProps> = () => {
         </div>
       </div>
 
-      {/* User Profile */}
-      {isLoggedIn && (
-        <div className="px-4 py-6 border-b border-gray-200 dark:border-gray-800">
-          <AnimatePresence mode="wait">
-            {!isCollapsed ? (
-              <motion.div
-                key="profile-expanded"
-                initial="collapsed"
-                animate="expanded"
-                exit="collapsed"
-                variants={contentVariants}
-                className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              >
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#E20074] to-[#FF0066] flex items-center justify-center flex-shrink-0">
-                  <User className="w-8 h-8 text-white" />
+      {/* Profile Section */}
+      <div className="px-4 py-6 border-b border-gray-200 dark:border-gray-800">
+        <AnimatePresence mode="wait">
+          {!isCollapsed ? (
+            <motion.div
+              key="profile-expanded"
+              initial="collapsed"
+              animate="expanded"
+              exit="collapsed"
+              variants={contentVariants}
+            >
+              {isEmployee && user ? (
+                // Employee Profile - Only when authenticated
+                <div className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 border border-gray-200 dark:border-gray-700">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#E20074] to-[#FF0066] flex items-center justify-center flex-shrink-0 shadow-lg">
+                    <User className="w-8 h-8 text-white" />
+                  </div>
+                  <div className="flex flex-col items-center min-w-0">
+                    <p className="text-sm font-bold text-gray-900 dark:text-white text-center">
+                      {user?.displayName || user?.email || 'Employee'}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                      Employee
+                    </p>
+                  </div>
                 </div>
-                <div className="flex flex-col items-center min-w-0">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white text-center">
-                    {user?.displayName || user?.email || 'Employee'}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-                    Employee
-                  </p>
+              ) : (
+                // Customer Appreciation Message
+                <div className="relative overflow-hidden p-4 rounded-2xl bg-gradient-to-br from-[#E20074] via-[#FF0066] to-[#FF4D8C] shadow-lg">
+                  <motion.div
+                    animate={{
+                      scale: [1, 1.2, 1],
+                      opacity: [0.2, 0.3, 0.2],
+                    }}
+                    transition={{
+                      duration: 6,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                    className="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-full blur-2xl"
+                  />
+                  <div className="relative z-10 text-center">
+                    <motion.div
+                      animate={{
+                        rotate: [0, 10, -10, 10, 0],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        repeatDelay: 3,
+                      }}
+                      className="text-3xl mb-2"
+                    >
+                      🎉
+                    </motion.div>
+                    <p className="text-white font-bold text-sm mb-1">
+                      Thank You!
+                    </p>
+                    <p className="text-white/90 text-xs leading-relaxed">
+                      We're grateful you chose T-Mobile. Your feedback helps us improve every day!
+                    </p>
+                  </div>
                 </div>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="profile-collapsed"
-                initial="collapsed"
-                animate="expanded"
-                exit="collapsed"
-                variants={contentVariants}
-                className="flex justify-center"
-              >
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#E20074] to-[#FF0066] flex items-center justify-center">
+              )}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="profile-collapsed"
+              initial="collapsed"
+              animate="expanded"
+              exit="collapsed"
+              variants={contentVariants}
+              className="flex justify-center"
+            >
+              {isEmployee && user ? (
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#E20074] to-[#FF0066] flex items-center justify-center shadow-lg">
                   <User className="w-6 h-6 text-white" />
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      )}
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#E20074] to-[#FF0066] flex items-center justify-center shadow-lg">
+                  <span className="text-xl">🎉</span>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* Navigation */}
       <nav className="flex-1 py-4 px-2">
@@ -350,7 +408,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
                   <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#E20074] to-[#FF0066] flex items-center justify-center">
-                        <span className="text-white font-bold text-sm">T</span>
+                        <span className="text-white font-bold text-sm"><img src={logoImage} alt="FeedbackAI Logo" className="w-full h-full object-cover" /></span>
                       </div>
                       <div>
                         <h2 className="text-sm font-semibold text-gray-900 dark:text-white">

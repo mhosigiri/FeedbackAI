@@ -7,7 +7,11 @@ interface AuthContextType {
   isLoggedIn: boolean;
   user: User | null;
   empId: string | null;
+  isEmployee: boolean;
+  isCustomer: boolean;
+  loading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
+  loginAsCustomer: () => void;
   logout: () => void;
 }
 
@@ -28,13 +32,22 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [empId, setEmpId] = useState<string | null>(null);
-  const isLoggedIn = !!user;
+  const [loading, setLoading] = useState<boolean>(true);
+  const [isCustomer, setIsCustomer] = useState<boolean>(() => {
+    // Restore customer mode from localStorage
+    return localStorage.getItem('isCustomer') === 'true';
+  });
+  
+  const isLoggedIn = !!user || isCustomer;
+  const isEmployee = !!user && !isCustomer;
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
       setUser(u);
       setEmpId(u?.uid || null);
       if (u) {
+        setIsCustomer(false);
+        localStorage.removeItem('isCustomer');
         // Upsert employee profile on backend
         try {
           await fetch(`${BASE_URL}/employees/update`, {
@@ -44,6 +57,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           });
         } catch {}
       }
+      setLoading(false);
     });
     return () => unsub();
   }, []);
@@ -53,20 +67,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const cred = await signInWithEmailAndPassword(auth, email, password);
       setUser(cred.user);
       setEmpId(cred.user.uid);
+      setIsCustomer(false);
       return true;
     } catch {
       return false;
     }
   };
 
+  const loginAsCustomer = () => {
+    setIsCustomer(true);
+    setUser(null);
+    setEmpId(null);
+    localStorage.setItem('isCustomer', 'true');
+  };
+
   const logout = () => {
     signOut(auth).catch(() => {});
     setUser(null);
     setEmpId(null);
+    setIsCustomer(false);
+    localStorage.removeItem('isCustomer');
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, user, empId, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, user, empId, isEmployee, isCustomer, loading, login, loginAsCustomer, logout }}>
       {children}
     </AuthContext.Provider>
   );

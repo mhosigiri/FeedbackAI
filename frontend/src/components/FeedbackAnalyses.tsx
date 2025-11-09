@@ -2,8 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { listAnalyses } from '../api';
 import type { FeedbackAnalysis, WorkflowInsightCard, WorkflowInsightFlowStep } from '../types';
 import { CheckCircle, User as UserIcon, ClipboardList, AlertCircle, Tag, Compass } from 'lucide-react';
+import { collection, getDocs } from 'firebase/firestore';
+import { fs } from '../firebase';
 
-export default function FeedbackAnalyses() {
+interface FeedbackAnalysesProps {
+  employeeName?: string;
+}
+
+export default function FeedbackAnalyses({ employeeName }: FeedbackAnalysesProps) {
   const [items, setItems] = useState<FeedbackAnalysis[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -13,19 +19,43 @@ export default function FeedbackAnalyses() {
       try {
         setLoading(true);
         setError('');
-        const res = await listAnalyses(8);
-        setItems(res as FeedbackAnalysis[]);
+        const res = await listAnalyses(50); // Get more to filter
+        let analyses = res as FeedbackAnalysis[];
+        
+        // If employeeName is provided, filter by matching feedback text
+        if (employeeName) {
+          // Fetch feedback items to match with analyses
+          const feedbackRef = collection(fs, 'feedback');
+          const feedbackSnapshot = await getDocs(feedbackRef);
+          const feedbackMap = new Map();
+          
+          feedbackSnapshot.forEach((doc) => {
+            const data = doc.data();
+            feedbackMap.set(doc.id, data);
+          });
+          
+          // Filter analyses where the feedback text mentions the employee
+          analyses = analyses.filter(analysis => {
+            const feedback = feedbackMap.get(analysis.feedback_id);
+            if (feedback && feedback.text) {
+              return feedback.text.includes(employeeName);
+            }
+            return false;
+          });
+        }
+        
+        setItems(analyses.slice(0, 8)); // Show max 8
       } catch (e: any) {
         setError(e?.message || 'Failed to load analyses');
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [employeeName]);
 
   return (
     <div id="insights" className="space-y-4">
-      <h2 className="text-xl font-semibold mb-2">Latest Customer Form Analyses</h2>
+      <h2 className="text-xl text-white font-semibold mb-2">Latest Customer Form Analyses</h2>
       {loading && <p className="text-sm text-gray-500">Analyzing recent submissions...</p>}
       {error && <p className="text-sm text-red-600">Error: {error}</p>}
       <div className="grid grid-cols-1 gap-4">
