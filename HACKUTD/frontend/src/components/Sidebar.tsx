@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { 
   Home, 
   BarChart3, 
@@ -11,7 +12,9 @@ import {
   Edit2,
   Sun,
   Moon,
-  MessageCircle
+  MessageCircle,
+  Users,
+  LogOut
 } from 'lucide-react';
 
 interface SidebarProps {}
@@ -19,6 +22,7 @@ interface SidebarProps {}
 const Sidebar: React.FC<SidebarProps> = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { logout } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -62,7 +66,9 @@ const Sidebar: React.FC<SidebarProps> = () => {
     // Set active section based on current route
     if (location.pathname === '/chatbot') {
       setActiveSection('joy');
-    } else {
+    } else if (location.pathname === '/community') {
+      setActiveSection('community');
+    } else if (location.pathname === '/dashboard' || location.pathname === '/') {
       setActiveSection('dashboard');
     }
   }, [location.pathname]);
@@ -71,25 +77,33 @@ const Sidebar: React.FC<SidebarProps> = () => {
     // Scroll spy to detect active section (only on dashboard page)
     if (location.pathname !== '/') return;
 
-    const handleScroll = () => {
-      const sections = ['dashboard', 'insights', 'settings'];
-      const scrollPosition = window.scrollY + 200; // Offset for better detection
+    let ticking = false;
 
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const section = document.getElementById(sections[i]);
-        if (section) {
-          const sectionTop = section.offsetTop;
-          const sectionHeight = section.offsetHeight;
-          
-          if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
-            setActiveSection(sections[i]);
-            break;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const sections = ['dashboard', 'insights', 'community', 'settings'];
+          const scrollPosition = window.scrollY + 200; // Offset for better detection
+
+          for (let i = sections.length - 1; i >= 0; i--) {
+            const section = document.getElementById(sections[i]);
+            if (section) {
+              const sectionTop = section.offsetTop;
+              const sectionHeight = section.offsetHeight;
+              
+              if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+                setActiveSection(sections[i]);
+                break;
+              }
+            }
           }
-        }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll(); // Check on mount
 
     return () => window.removeEventListener('scroll', handleScroll);
@@ -100,13 +114,33 @@ const Sidebar: React.FC<SidebarProps> = () => {
   };
 
   const scrollToSection = (sectionId: string) => {
-    const section = document.getElementById(sectionId);
-    if (section) {
-      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      setActiveSection(sectionId);
-      if (isMobile) {
-        setIsMobileMenuOpen(false);
+    // If we're not on the home page, navigate there first
+    if (location.pathname !== '/') {
+      navigate('/');
+      // Wait for navigation, then scroll
+      setTimeout(() => {
+        const section = document.getElementById(sectionId);
+        if (section) {
+          window.scrollTo({
+            top: section.offsetTop - 20,
+            behavior: 'smooth'
+          });
+          setActiveSection(sectionId);
+        }
+      }, 150);
+    } else {
+      const section = document.getElementById(sectionId);
+      if (section) {
+        // Use window.scrollTo for better performance
+        window.scrollTo({
+          top: section.offsetTop - 20,
+          behavior: 'smooth'
+        });
+        setActiveSection(sectionId);
       }
+    }
+    if (isMobile) {
+      setIsMobileMenuOpen(false);
     }
   };
 
@@ -119,10 +153,11 @@ const Sidebar: React.FC<SidebarProps> = () => {
   };
 
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home, type: 'scroll' },
+    { id: 'dashboard', label: 'Dashboard', icon: Home, type: 'navigate', path: '/dashboard' },
     { id: 'insights', label: 'Insights', icon: BarChart3, type: 'scroll' },
-    { id: 'joy', label: 'Joy', icon: MessageCircle, type: 'navigate', path: '/chatbot' },
+    { id: 'community', label: 'Community', icon: Users, type: 'navigate', path: '/community' },
     { id: 'settings', label: 'Settings', icon: Settings, type: 'scroll' },
+    { id: 'joy', label: 'Joy', icon: MessageCircle, type: 'navigate', path: '/chatbot' },
   ];
 
   const sidebarVariants = {
@@ -244,7 +279,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
             
             return (
               <li key={item.id}>
-                <motion.button
+                <button
                   onClick={() => {
                     if (item.type === 'navigate' && item.path) {
                       navigate(item.path);
@@ -255,11 +290,9 @@ const Sidebar: React.FC<SidebarProps> = () => {
                       scrollToSection(item.id);
                     }
                   }}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
                   className={`
                     w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl
-                    transition-all duration-200
+                    transition-colors duration-200
                     ${
                       isActive
                         ? 'bg-[#E20074] text-white shadow-md'
@@ -268,25 +301,33 @@ const Sidebar: React.FC<SidebarProps> = () => {
                   `}
                 >
                   <Icon className="w-5 h-5 flex-shrink-0" />
-                  <AnimatePresence>
-                    {!isCollapsed && (
-                      <motion.span
-                        initial="collapsed"
-                        animate="expanded"
-                        exit="collapsed"
-                        variants={contentVariants}
-                        className="text-sm font-medium"
-                      >
-                        {item.label}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </motion.button>
+                  {!isCollapsed && (
+                    <span className="text-sm font-medium">
+                      {item.label}
+                    </span>
+                  )}
+                </button>
               </li>
             );
           })}
         </ul>
       </nav>
+
+      {/* Logout Button */}
+      <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-800">
+        <button
+          onClick={() => {
+            logout();
+            navigate('/');
+          }}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+        >
+          <LogOut className="w-5 h-5 flex-shrink-0" />
+          {!isCollapsed && (
+            <span className="text-sm font-medium">Logout</span>
+          )}
+        </button>
+      </div>
 
       {/* Dark Mode Toggle */}
       <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-800">
@@ -466,7 +507,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
                               }}
                               className={`
                                 w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl
-                                transition-all duration-200
+                                transition-colors duration-200
                                 ${
                                   isActive
                                     ? 'bg-[#E20074] text-white shadow-md'
@@ -482,6 +523,21 @@ const Sidebar: React.FC<SidebarProps> = () => {
                       })}
                     </ul>
                   </nav>
+
+                  {/* Mobile Logout Button */}
+                  <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-800">
+                    <button
+                      onClick={() => {
+                        logout();
+                        navigate('/');
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                    >
+                      <LogOut className="w-5 h-5 flex-shrink-0" />
+                      <span className="text-sm font-medium">Logout</span>
+                    </button>
+                  </div>
 
                   {/* Mobile Dark Mode Toggle */}
                   <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-800">

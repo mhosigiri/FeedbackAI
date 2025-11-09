@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { User } from 'lucide-react';
 
 interface ChatMessageProps {
   message: string;
@@ -48,7 +49,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, isUser, timestamp, a
       </div>
       {isUser && (
         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#E20074] to-[#FF0066] flex items-center justify-center flex-shrink-0">
-          <span className="text-white text-sm font-semibold">U</span>
+          <User className="w-5 h-5 text-white" />
         </div>
       )}
     </motion.div>

@@ -1,10 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import CustomerHappinessIndex from './components/CustomerHappinessIndex';
 import AlreadyWorkingOn from './components/AlreadyWorkingOn';
+import ProtectedRoute from './components/ProtectedRoute';
 import Chatbot from './pages/Chatbot';
+import AIAssistant from './pages/AIAssistant';
+import AIWorkflow from './pages/AIWorkflow';
+import Community from './pages/Community';
+import Landing from './pages/Landing';
+import Login from './pages/Login';
 import { Search, X, Bell } from 'lucide-react';
 import dashboardImage from './images/2.png';
 
@@ -300,6 +306,18 @@ const Dashboard: React.FC = () => {
           </div>
         </section>
 
+        {/* Community Section */}
+        <section id="community" className="min-h-screen flex items-center justify-center p-8">
+          <div className="max-w-4xl w-full">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+              Community
+            </h1>
+            <p className="text-lg text-gray-600 dark:text-gray-400">
+              Connect with other users, share feedback, and participate in community discussions.
+            </p>
+          </div>
+        </section>
+
         {/* Settings Section */}
         <section id="settings" className="min-h-screen flex items-center justify-center p-8">
           <div className="max-w-4xl w-full">
@@ -317,11 +335,47 @@ const Dashboard: React.FC = () => {
 };
 
 const App: React.FC = () => {
+  const location = useLocation();
+
   return (
-    <Routes>
-      <Route path="/" element={<Dashboard />} />
-      <Route path="/chatbot" element={<Chatbot />} />
-    </Routes>
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/chatbot" 
+          element={
+            <ProtectedRoute>
+              <Chatbot />
+            </ProtectedRoute>
+          } 
+        />
+            <Route 
+              path="/ai-assistant" 
+              element={<AIAssistant />} 
+            />
+            <Route 
+              path="/ai-workflow" 
+              element={<AIWorkflow />} 
+            />
+            <Route 
+              path="/community" 
+              element={
+                <ProtectedRoute>
+                  <Community />
+                </ProtectedRoute>
+              } 
+            />
+      </Routes>
+    </AnimatePresence>
   );
 };
 
