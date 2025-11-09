@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Sidebar from './components/Sidebar';
 import CustomerHappinessIndex from './components/CustomerHappinessIndex';
+import AlreadyWorkingOn from './components/AlreadyWorkingOn';
 import { Search, X, Bell } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -134,13 +135,13 @@ const App: React.FC = () => {
                 <CustomerHappinessIndex />
               </motion.div>
               
-              {/* Bottom Right */}
+              {/* Bottom Right - Already Working On */}
               <motion.div 
                 whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
-                className="bg-white dark:bg-[#0B0B0B] rounded-2xl shadow-md p-6 border border-gray-200 dark:border-gray-800 cursor-pointer"
+                className="cursor-pointer"
               >
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Bottom Right</h3>
+                <AlreadyWorkingOn />
               </motion.div>
             </div>
           </div>
