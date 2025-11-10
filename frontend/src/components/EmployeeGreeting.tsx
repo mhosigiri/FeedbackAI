@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Sparkles, TrendingUp, Award, Heart, Star } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { fs } from '../firebase';
-import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 
 interface EmployeeStats {
   problemsSolved: number;
