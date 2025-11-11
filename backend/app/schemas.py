@@ -39,8 +39,8 @@ class SentimentResult(BaseModel):
         "Mobile App",
         "Other",
     ]
-    issues: list[str] = []
-    delights: list[str] = []
+    issues: list[str] = Field(default_factory=list)
+    delights: list[str] = Field(default_factory=list)
 
 
 class SentimentQuery(BaseModel):
@@ -61,19 +61,19 @@ class SentimentQuery(BaseModel):
     )
 
 
-class SentimentResponse(BaseModel):
-    sentiments: list[SentimentResult]
-    csi_score: float = Field(..., ge=0, le=100)
-    summary: str
-    issue_counts: dict[str, int]
-    timings: Optional["AnalysisTimings"] = None
-
-
 class AnalysisTimings(BaseModel):
     reddit_ms: int = 0
     feedback_ms: int = 0
     llm_ms: int = 0
     total_ms: int = 0
+
+
+class SentimentResponse(BaseModel):
+    sentiments: list[SentimentResult]
+    csi_score: float = Field(..., ge=0, le=100)
+    summary: str
+    issue_counts: dict[str, int]
+    timings: Optional[AnalysisTimings] = None
 
 
 class HealthResponse(BaseModel):
