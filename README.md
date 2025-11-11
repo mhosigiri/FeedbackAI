@@ -41,3 +41,5 @@ Create `.env` files in both backend and frontend directories with required API k
 ## Development
 
 Create a new branch for changes and test before merging to main.
+
+## Deployment
