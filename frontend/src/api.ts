@@ -6,8 +6,8 @@ function firstFromList(val?: string | null): string | undefined {
 
 const RUNTIME_FALLBACK =
   typeof window !== 'undefined'
-    ? `${window.location.protocol}//${window.location.hostname}:8000`
-    : 'http://localhost:8000';
+    ? `${window.location.protocol}//${window.location.hostname}:8080`
+    : 'http://localhost:8080';
 
 const FROM_ENV = firstFromList(process.env.REACT_APP_BACKEND_URL);
 const BASE_URL = (FROM_ENV || RUNTIME_FALLBACK).replace(/\/+$/, '');
