@@ -23,11 +23,11 @@ class Settings(BaseSettings):
     OPENROUTER_API_KEY: Optional[str] = None
 
     # Frontend + CORS
-    FRONTEND_ORIGIN = "https://feedback-two-omega.vercel.app"
+    FRONTEND_ORIGIN: str = "https://feedback-two-omega.vercel.app"
     # When true, allow all origins (dev convenience). Overrides ALLOWED_ORIGINS.
     CORS_ALLOW_ALL = True
     # Comma-separated list of origins or JSON list. FRONTEND_ORIGIN is auto-added.
-    ALLOWED_ORIGINS = "https://feedback-two-omega.vercel.app"
+    ALLOWED_ORIGINS: Optional[str] = "https://feedback-two-omega.vercel.app"
 
     # Logging
     LOG_LEVEL: str = "INFO"
