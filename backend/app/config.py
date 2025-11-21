@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import Optional
 
-from pydantic import field_validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -25,9 +25,11 @@ class Settings(BaseSettings):
     # Frontend + CORS
     FRONTEND_ORIGIN: str = "https://feedback-two-omega.vercel.app"
     # When true, allow all origins (dev convenience). Overrides ALLOWED_ORIGINS.
-    CORS_ALLOW_ALL = True
-    # Comma-separated list of origins or JSON list. FRONTEND_ORIGIN is auto-added.
-    ALLOWED_ORIGINS: Optional[str] = "https://feedback-two-omega.vercel.app"
+    CORS_ALLOW_ALL: bool = True
+    # Comma-separated list of origins. FRONTEND_ORIGIN is auto-added.
+    ALLOWED_ORIGINS: list[str] | str | None = Field(
+        default_factory=lambda: ["https://feedback-two-omega.vercel.app"]
+    )
 
     # Logging
     LOG_LEVEL: str = "INFO"
@@ -35,8 +37,8 @@ class Settings(BaseSettings):
     # External endpoints
     REDDIT_BASE_URL: str = "https://oauth.reddit.com"
     NEMOTRON_BASE_URL: str = "https://integrate.api.nvidia.com/v1"
-    NEMOTRON_MODEL: str = "NVIDIABuild-Autogen-33"
-    GEMINI_MODEL: str = "gemini-1.5-flash"
+    NEMOTRON_MODEL: str = "mistralai/mistral-nemotron"
+    GEMINI_MODEL: str = "gemini-2.5-flash"
     OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
     OPENROUTER_MODEL: str = "openrouter/auto"
 
@@ -50,14 +52,16 @@ class Settings(BaseSettings):
     @field_validator("ALLOWED_ORIGINS", mode="before")
     @classmethod
     def _normalize_origins(cls, value):
-        # Accept comma-separated string, JSON string, or list
+        # Accept comma-separated string or list
         if value is None:
             return []
         if isinstance(value, str):
             # Split on commas; ignore empties
             parts = [v.strip() for v in value.split(",")]
             return [p for p in parts if p]
-        return value
+        if isinstance(value, list):
+            return [str(v).strip() for v in value if str(v).strip()]
+        return []
 
 @lru_cache()
 def get_settings() -> Settings:
